@@ -3,7 +3,7 @@ import { io } from "socket.io-client"
 import { create } from "zustand"
 import { axiosInstance } from "../lib/axios.js"
 
-const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001/api" : "/"
+const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001/api" : "https://gossip-uye2.onrender.com"
 
 export const useAuthStore = create((set, get) => ({
     authUser: null,
