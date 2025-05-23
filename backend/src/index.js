@@ -15,16 +15,23 @@ dotenv.config()
 
 const PORT = process.env.PORT
 const __dirname = path.resolve()
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://gossip-uye2.onrender.com"
+];
 
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 app.use(cookieParser())
+
+
 app.use(
-    cors({
-    origin: "http://localhost:5173",
+  cors({
+    origin: allowedOrigins,
     credentials: true,
-    })
-)
+  })
+);
+
 
 app.use("/api/auth", authRoutes)
 app.use("/api/messages", messageRoutes)
