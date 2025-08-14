@@ -22,6 +22,7 @@ const allowedOrigins = [
   "http://127.0.0.1:5173",
   "http://127.0.0.1:5501",
   "https://kcsrtreasures.github.io/breads/",
+  "https://gossip-uye2.onrender.com",
 ];
 
 app.use(express.json({ limit: '10mb' }))
@@ -29,11 +30,10 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 app.use(cookieParser())
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (e.g., mobile apps, curl)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("CORS error: Not allowed - " + origin));
+      callback(new Error(`CORS error: Not allowed - ${origin}`));
     }
   },
   credentials: true
