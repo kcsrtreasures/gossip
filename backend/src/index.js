@@ -14,7 +14,7 @@ import messageRoutes from "./routes/message.route.js"
 dotenv.config()
 
 
-const PORT = process.env.PORT
+const PORT = process.env.PORT || 5000
 const __dirname = path.resolve()
 
 const allowedOrigins = [
