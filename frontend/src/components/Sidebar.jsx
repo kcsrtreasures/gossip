@@ -5,7 +5,7 @@ import { useChatStore } from "../store/useChatStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 
 const Sidebar = () => {
-    const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading }= useChatStore();
+    const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading, unreadMessages, clearUnread }= useChatStore();
 
     const { onlineUsers } = useAuthStore();
     const [showOnlineOnly, setShowOnlineOnly] = useState(false)
@@ -19,14 +19,14 @@ const Sidebar = () => {
     if(isUsersLoading) return <SidebarSkeleton />
 
   return (
-    <aside className="h-full w-9 sm:w-9 lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
+    <aside className="h-full w-10 sm:w-10 lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
         <div className="border-b border-base-300 w-full p-2">
             <div className="flex items-center gap-2">
                 <Users className="size-6" /> 
                 <span className="font-medium hidden lg:block px-1" >Contacts</span>
             </div>
             {/* TODO: Online filter toggle */}
-            <div className="mt-3 hidden lg:flex items-center gap-2">
+            <div className="mt-2 hidden lg:flex items-center gap-2">
                 <label className="cursor-pointer flex items-center gap-2">
                     <input 
                     type="checkbox"
@@ -45,25 +45,46 @@ const Sidebar = () => {
                 {filteredUsers.map((user) => (
                     <button
                     key={user._id}
-                    onClick={() => setSelectedUser(user)}
+                    onClick={() => {
+                        setSelectedUser(user);
+                        clearUnread(user._id);
+                    }}
                     className={`
                         w-full p-2 flex items-center gap-3 hover:bg-base-300 transition-colors 
-                        ${selectedUser?._id === user._id ? "bg-base-300 ring-1 ring-base-300" : "" } aria-pressed={selectedUser?._id === user._id}
+                        ${selectedUser?._id === user._id ? "bg-base-300 ring-1 ring-base-300" : "" } 
                     `} 
                     >
-                        <div className="relative mx-auto lg:mx-0">
+                        
+                        <div className="relative mx-auto lg:mx-0 w-5 h-5 lg:w-10 lg:h-10 flex-shrink-0">
+
+                        <div className="w-full h-full rounded-full overflow-hidden bg-base-300">
                             <img 
                             src={user.profilePic || "/vite.svg"} 
-                            alt={user.name || "User profile picture"}
-                            className="lg:w-12 lg:h-12 sm:w-8 sm:h-8 object-cover rounded-full"
+                            alt={user.fullName || "User profile picture"}
+                            className="w-full h-full object-cover"
                             draggable={false}
                             />
-                            {onlineUsers.includes(user._id) && (
-                                <span 
-                                className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full ring-2 ring-zinc-900"
-                                />
-                            )}
+                                {unreadMessages[user._id] > 0 && (
+                                    unreadMessages[user._id] === 1 ? (
+                                        <span className="absolute -top-1 -right-1 w-[8px] h-[8px] bg-red-500 rounded-full shadow-md"></span>
+                                    ) : (
+                                        <span
+                                            className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[12px] h-[12px] flex items-center justify-center shadow-md"
+                                        >
+                                            {unreadMessages[user._id] > 9 ? "9+" : unreadMessages[user._id]}
+                                        </span>
+                                    )
+                                )}
+
+
                         </div>
+
+                        {onlineUsers.includes(user._id) && (
+                            <span className="absolute bottom-0 right-0 size-2 bg-green-500 rounded-full ring-2 ring-zinc-900" />
+                        )}
+                        
+                        </div>
+
 
                         {/* User info - only visible on larger screens */}
                         <div className="hidden lg:block text-left min-w-0">

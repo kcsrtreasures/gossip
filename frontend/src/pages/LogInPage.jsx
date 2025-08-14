@@ -1,8 +1,10 @@
+import axios from "axios"
 import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import AuthImagePattern from "../components/AuthImagePattern"
 import { useAuthStore } from "../store/useAuthStore"
+
 
 const LogInPage = () => {
   const [ showPassword, setShowPassword ] = useState(false)
@@ -12,10 +14,47 @@ const LogInPage = () => {
   })
   const { login, isLoggingIn } = useAuthStore()
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    login(formData)
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  const result = await login(formData); // assumes this returns user/token
+
+  if (result?.token && window.opener) {
+    window.opener.postMessage({
+      type: "LOGIN_SUCCESS",
+      user: { fullName: result.user.fullName },
+      token: result.token,
+    
+    }, ("http://127.0.0.1:5501/", ""));
+
+    window.close();
   }
+};
+
+useEffect(() => {
+  const checkSession = async () => {
+    try {
+      const res = await axios.get("/auth/check", {
+        withCredentials: true,
+      });
+
+      if (res.data?.fullName && window.opener) {
+        window.opener.postMessage({
+          type: "LOGIN_SUCCESS",
+          user: { fullName: res.data.fullName },
+          token: res.data.token,
+        }, "http://127.0.0.1:5501/");
+
+        window.close();
+      }
+    } catch (err) {
+      // No session, show login
+    }
+  };
+
+  checkSession();
+}, []);
+
+
   return (
     <div>
     <div className="min-h-screen grid lg:grid-cols-2">

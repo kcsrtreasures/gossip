@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import cloudinary from "../lib/cloudinary.js";
 import { generateToken } from "../lib/utils.js";
+import Cart from "../models/cart.model.js";
 import User from "../models/user.model.js";
 
 export const signup = async (req, res) => {
@@ -36,6 +37,7 @@ export const signup = async (req, res) => {
                 fullName: newUser.fullName,
                 email: newUser.email,
                 profilePic: newUser.profilePic,
+                role: "user",
             })
 
         } else {
@@ -50,7 +52,9 @@ export const signup = async (req, res) => {
 }
 
 export const login = async (req, res) => {
-    const { email, password } = req.body
+    const { email, password, guestCart } = req.body
+    const redirectUrl = req.query.redirect; // e.g., from ?redirect=https://kcsrtreasures.github.io/breads/
+
 
     try {
         const user = await User.findOne({email})
@@ -64,13 +68,68 @@ export const login = async (req, res) => {
             return res.status(400).json({ message: "Invalid credentials."})
         }
 
-        generateToken(user._id, res)
+        const token =  generateToken(user._id, res)
+
+        // ---- Merge guest cart into user's DB cart ----
+        if (guestCart && Array.isArray(guestCart)) {
+            let userCart = await Cart.findOne({ userId: user._id });
+            if (!userCart) {
+                userCart = new Cart({ userId: user._id, items: [] });
+            }
+
+            guestCart.forEach(guestItem => {
+                const existingItem = userCart.items.find(i => i.productId.toString() === guestItem.productId);
+                if (existingItem) {
+                    existingItem.quantity += guestItem.quantity;
+                } else {
+                    userCart.items.push({
+                        productId: guestItem.productId,
+                        quantity: guestItem.quantity,
+                        price: guestItem.price
+                    });
+                }
+            });
+
+            await userCart.save();
+        }
+        
+        
+        if (redirectUrl) {
+            const safeUser = {
+                _id: user._id,
+                fullName: user.fullName,
+                email: user.email,
+                profilePic: user.profilePic,
+                isAdmin: user.role === "admin",
+            };
+            // console.log("safeUser sent to frontend:", safeUser);
+
+
+            return res.send(`
+            <html>
+            <body>
+            <script>
+                window.opener.postMessage({
+                type: "LOGIN_SUCCESS",
+                user: JSON.parse('${JSON.stringify(safeUser).replace(/'/g, "\\'")}'),
+                token: "${token}"
+                }, "${new URL(redirectUrl).origin}");
+                window.close();
+            </script>
+            <p>Login successful. You can close this window.</p>
+            </body>
+            </html>
+            `);
+
+
+        }
 
         res.status(200).json({
             _id:user._id,
             fullName: user.fullName,
             email: user.email,
             profilePic: user.profilePic,
+            isAdmin: user.role === "admin",
         })
     } catch (error) {
         console.log("Error in login credentials", error.message)
