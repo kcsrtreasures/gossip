@@ -21,6 +21,7 @@ const allowedOrigins = [
   // "http://localhost:5173",
   "http://127.0.0.1:5173",
   "http://127.0.0.1:5501",
+  "http://127.0.0.1",
   "https://kcsrtreasures.github.io/breads/",
   "https://gossip-uye2.onrender.com",
 ];
@@ -53,7 +54,7 @@ if(process.env.NODE_ENV==="production"){
     })
 }
 
-server.listen(PORT, "0.0.0.0", () => {
+server.listen(PORT, "0.0.0.0", "127.0.0.1", () => {
     // console.log("Server is running at http://127.0.0.1:" + PORT)
     console.log("Server is running in PORT:" + PORT)
     connectDB()
