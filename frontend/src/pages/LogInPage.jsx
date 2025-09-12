@@ -19,14 +19,21 @@ const handleSubmit = async (e) => {
   const result = await login(formData); // assumes this returns user/token
 
   if (result?.token && window.opener) {
+    // Desktop popup flow
     window.opener.postMessage({
       type: "LOGIN_SUCCESS",
       user: { fullName: result.user.fullName },
       token: result.token,
-    
-    }, ("http://127.0.0.1:5501/", ""));
+    }, "http://127.0.0.1:5501");
 
-    window.close();
+    try {
+      window.close();
+    } catch {
+      window.location.href = "http://127.0.0.1:5501";
+    }
+  } else if (result?.token) {
+    // Mobile flow (no opener available)
+    window.location.href = "http://127.0.0.1:5501";
   }
 };
 
@@ -38,13 +45,21 @@ useEffect(() => {
       });
 
       if (res.data?.fullName && window.opener) {
+        // Desktop popup flow
         window.opener.postMessage({
           type: "LOGIN_SUCCESS",
           user: { fullName: res.data.fullName },
           token: res.data.token,
-        }, "http://127.0.0.1:5501/");
+        }, "http://127.0.0.1:5501");
 
-        window.close();
+        try {
+          window.close();
+        } catch {
+          window.location.href = "http://127.0.0.1:5501";
+        }
+      } else if (res.data?.fullName) {
+        // Mobile flow (no opener)
+        window.location.href = "http://127.0.0.1:5501";
       }
     } catch (err) {
       // No session, show login
@@ -53,6 +68,7 @@ useEffect(() => {
 
   checkSession();
 }, []);
+
 
 
   return (
