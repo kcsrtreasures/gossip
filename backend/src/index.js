@@ -18,21 +18,16 @@ const PORT = process.env.PORT || 5000
 const __dirname = path.resolve()
 
 const allowedOrigins = [
-  // "http://localhost:5173",
   "http://127.0.0.1:5173",
   "http://127.0.0.1:5501",
   "http://127.0.0.1",
-  "https://kcsrtreasures.github.io/",
+  "https://kcsrtreasures.github.io",
   "https://gossip-uye2.onrender.com",
 ];
 
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 app.use(cookieParser())
-// app.use(cors({
-//   origin: allowedOrigins,
-//   credentials: true
-// }));
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -42,8 +37,12 @@ app.use(cors({
       callback(new Error(`CORS error: Not allowed - ${origin}`));
     }
   },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
+
+app.options("*", cors());
 
 app.use("/api/auth", authRoutes)
 app.use("/api/messages", messageRoutes)
@@ -59,7 +58,7 @@ if(process.env.NODE_ENV==="production"){
     })
 }
 
-server.listen(PORT, "0.0.0.0", "127.0.0.1", () => {
+server.listen(PORT, "0.0.0.0", () => {
     // console.log("Server is running at http://127.0.0.1:" + PORT)
     console.log("Server is running in PORT:" + PORT)
     connectDB()
