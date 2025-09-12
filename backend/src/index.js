@@ -49,6 +49,12 @@ app.use("/api/messages", messageRoutes)
 
 app.use("/api/cart", cartRoutes)
 
+app.use((err, req, res, next) => {
+  console.error(err.stack)
+  res.header("Access-Control-Allow-Origin", req.headers.origin || "*")
+  res.header("Access-Control-Allow-Credentials", "true")
+  res.status(500).json({ error: err.message })
+})
 
 if(process.env.NODE_ENV==="production"){
     app.use(express.static(path.join(__dirname, "../frontend/dist")))
