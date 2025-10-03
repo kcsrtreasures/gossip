@@ -12,6 +12,8 @@ const io = new Server(server, {
             "http://127.0.0.1:5173",
             "http://127.0.0.1:5501",
             "https://kcsrtreasures.github.io",
+            "https://gossip-uye2.onrender.com", // add this
+
         ],
         methods: ["GET", "POST"],
         credentials: true

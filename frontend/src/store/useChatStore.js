@@ -17,6 +17,7 @@ export const useChatStore = create((set, get) => ({
         const { selectedUser } = get()
         const socket = useAuthStore.getState().socket;
         if (!selectedUser) return;
+        socket.emit("typing", { to: selectedUser._id })
     },
 
     setUnreadMessages: ( userId, count ) => set((state) => ({
@@ -73,6 +74,7 @@ export const useChatStore = create((set, get) => ({
     if (!selectedUser) return;
 
     const socket = useAuthStore.getState().socket;
+    get().unsubscribeFromMessages();
 
     // When a new message is received
     socket.on("newMessage", (newMessage) => {
@@ -85,9 +87,11 @@ export const useChatStore = create((set, get) => ({
 
         // If message is from selected user, add it to the chat
         if (selectedUser && newMessage.senderId === selectedUser._id) {
-            set({
-                messages: [...get().messages, newMessage],
-            });
+            set((state) => ({
+                messages: state.messages.some(msg => msg._id === newMessage._id)
+                    ? state.messages
+                    : [...state.messages, newMessage],
+            }));
         }
     });
 
@@ -125,12 +129,18 @@ export const useChatStore = create((set, get) => ({
     unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
     socket.off("newMessage");
+    socket.off("typing");
     socket.off("messageUnsent"); // 👈 also cleanup
     },
 
 
     // todo: optimize this one later
-    setSelectedUser: (selectedUser) => set({ selectedUser }),
+    setSelectedUser: (selectedUser) => {
+        set({ selectedUser });
+        if (selectedUser) {
+            get().clearUnread(selectedUser._id)
+        }
+    },
 
     markMessageAsRemoved: (messageId) => {
     set((state) => ({
