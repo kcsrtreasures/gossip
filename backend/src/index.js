@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 5000
 const __dirname = path.resolve()
 
 const allowedOrigins = [
-  // "http://localhost:5173",
+  "http://localhost:5173",
   "http://127.0.0.1:5173",
   "http://127.0.0.1:5501",
   "http://127.0.0.1",
