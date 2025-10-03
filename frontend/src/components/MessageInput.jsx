@@ -115,7 +115,6 @@ const MessageInput = () => {
                 )}
             </button>
         </form>
-
     </div>
   )
 }
