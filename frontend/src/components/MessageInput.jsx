@@ -6,9 +6,9 @@ import { useChatStore } from "../store/useChatStore"
 const MessageInput = () => {
     const [ text, setText ] = useState("")
     const [ imagePreview, setImagePreview ] = useState(null)
-    const [ isSending, setIsSending ] = useState(false)
+    const [ sending, setSending ] = useState(false)
     const fileInputRef = useRef(null)
-    const { sendMessage } = useChatStore()
+    const { sendMessage, sendTyping } = useChatStore()
 
     const handleImageChange = (e) => {
         const file = e.target.files[0]
@@ -32,9 +32,10 @@ const MessageInput = () => {
     const handleSendMessage = async(e) => {
         e.preventDefault()
         if(!text.trim() && !imagePreview) return;
+        if (sending) return
 
-        setIsSending(true)
         try {
+            setSending(true)
             await sendMessage({
                 text: text.trim(),
                 image: imagePreview,
@@ -48,7 +49,14 @@ const MessageInput = () => {
             console.error("Failed to send message:", error)     
             toast.error("Message failed to send")    
         } finally {
-            setIsSending(false)
+            setSending(false)
+        }
+    }
+
+    const handleTyping = (e) => {
+        setText(e.target.value)
+        if (sendTyping) {
+            sendTyping()
         }
     }
     
@@ -66,7 +74,7 @@ const MessageInput = () => {
                     onClick={removeImage}
                     className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-base-300 flex items-center justify-center"
                     type="button"
-                    disabled={isSending}
+                    disabled={sending}
                     >
                         <X className="size-3" />
                     </button>
@@ -79,10 +87,10 @@ const MessageInput = () => {
                 <input 
                 type="text"
                 className="w-full input input-bordered rounded-lg input-sm sm:input-md"
-                placeholder={isSending ? "Sending..." : "Type a message.."}
+                placeholder={sending ? "Sending..." : "Type a message.."}
                 value={text}
-                onChange={(e) => setText(e.target.value)}
-                disabled={isSending}
+                onChange={handleTyping}
+                disabled={sending}
                 onDrop={(e) => e.preventDefault()}
                 onDragOver={(e) => e.preventDefault()}
                 />
@@ -92,13 +100,13 @@ const MessageInput = () => {
                 className="hidden"
                 ref={fileInputRef}
                 onChange={handleImageChange}
-                disabled={isSending}
+                disabled={sending}
                 />
                 <button
                 type="button"
                 className={`btn btn-circle ${imagePreview ? "text-emerald-500" : "text-zinc-500"} btn-sm sm:btn-md`}
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isSending}
+                disabled={sending}
                 >
                     <Image size={18} />
                 </button>
@@ -106,13 +114,10 @@ const MessageInput = () => {
             <button
                 type="submit"
                 className="btn btn-sm sm:btn-md btn-circle  "
-                disabled={isSending || (!text.trim() && !imagePreview)}
+                disabled={sending || (!text.trim() && !imagePreview)}
             >
-                {isSending ? (
-                    <Loader2 className="animate-spin" size={20} />
-                ) : (
-                  <Send size={20}  />
-                )}
+              {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={20} />}
+
             </button>
         </form>
     </div>
