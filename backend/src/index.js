@@ -60,10 +60,11 @@ app.use("/api/cart", cartRoutes)
 if(process.env.NODE_ENV==="production"){
     app.use(express.static(path.join(__dirname, "../frontend/dist")))
 
-    app.get("*", (req, res) => {
+    app.get("/*splat", (req, res) => {
         res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"))
     })
 }
+
 
 server.listen(PORT, "0.0.0.0", () => {
     // console.log("Server is running at http://127.0.0.1:" + PORT)
