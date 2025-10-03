@@ -9,8 +9,15 @@ export const useChatStore = create((set, get) => ({
     selectedUser: null,
     isUsersLoading: false,
     isMessagesLoading: false,
+    isTyping: false,
 
     unreadMessages: {},
+
+    sendTyping: () => {
+        const { selectedUser } = get()
+        const socket = useAuthStore.getState().socket;
+        if (!selectedUser) return;
+    },
 
     setUnreadMessages: ( userId, count ) => set((state) => ({
         unreadMessages: {...state.unreadMessages, [userId]: count }
@@ -83,6 +90,15 @@ export const useChatStore = create((set, get) => ({
             });
         }
     });
+
+    socket.on("typing", ({ from }) => {
+        if (selectedUser && from === selectedUser._id) {
+            set({ isTyping: true })
+
+            setTimeout(() => set ({ isTyping: false }), 3000)
+
+        }
+    })
 
     // When a message is unsent (removed)
     socket.on("messageUnsent", ({ messageId }) => {

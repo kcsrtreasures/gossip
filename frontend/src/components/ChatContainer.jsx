@@ -9,7 +9,7 @@ import MessageSkeleton from "./skeletons/MessageSkeleton"
 
 
 const ChatContainer = () => {
-  const { messages, getMessages, isMessagesLoading, selectedUser, subscribeToMessages, unsubscribeFromMessages } = useChatStore()
+  const { messages, getMessages, isMessagesLoading, isTyping, selectedUser, subscribeToMessages, unsubscribeFromMessages } = useChatStore()
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
   const scrollContainerRef = useRef(null)
   const { authUser} = useAuthStore()
@@ -55,6 +55,24 @@ const ChatContainer = () => {
     return (
       <div className="flex-1 flex flex-col overflow-auto" draggable={false}>
         <ChatHeader />
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-0" ref={scrollContainerRef}>
+          {messages.map((message, index) => {
+            // ... your existing message rendering logic
+          })}
+
+          {/* Typing indicator */}
+          {isTyping && (
+            <div className="chat chat-start">
+              <div className="chat-bubble bg-base-300 text-sm italic text-zinc-500">
+                {selectedUser?.fullName || "User"} is typing...
+              </div>
+            </div>
+          )}
+        </div>
+
+
+
         <MessageSkeleton />
         <MessageInput />
       </div>
