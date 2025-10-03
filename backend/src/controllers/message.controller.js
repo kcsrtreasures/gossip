@@ -95,9 +95,11 @@ export const unsendMessage = async (req, res) => {
     // ✅ Emit to sender and receiver via imported `io`
     io.to(message.senderId.toString()).emit("messageUnsent", {
       messageId: message._id,
+      senderId: message.senderId,
     });
     io.to(message.receiverId.toString()).emit("messageUnsent", {
       messageId: message._id,
+      senderId: message.senderId,
     });
 
     res.status(200).json({ success: true });

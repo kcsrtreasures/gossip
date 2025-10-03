@@ -105,7 +105,7 @@ export const useChatStore = create((set, get) => ({
     })
 
     // When a message is unsent (removed)
-    socket.on("messageUnsent", ({ messageId }) => {
+    socket.on("messageUnsent", ({ messageId, senderId }) => {
         const existingMessage = get().messages.find(msg => msg._id === messageId);
         const isMe = existingMessage?.senderId === useAuthStore.getState().authUser._id;
 
@@ -120,6 +120,10 @@ export const useChatStore = create((set, get) => ({
             : msg
         ),
         }));
+            // Show toast only if another user unsent
+        if (senderId !== useAuthStore.getState().authUser._id) {
+            toast("A message was unsent.");
+        }
     });
     },
 
