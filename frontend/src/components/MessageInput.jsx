@@ -1,4 +1,4 @@
-import { Image, Loader, Loader2, Send, X } from "lucide-react"
+import { Image, Loader2, Send, X } from "lucide-react"
 import { useRef, useState } from "react"
 import toast from "react-hot-toast"
 import { useChatStore } from "../store/useChatStore"
@@ -8,7 +8,7 @@ const MessageInput = () => {
     const [ imagePreview, setImagePreview ] = useState(null)
     const [ sending, setSending ] = useState(false)
     const fileInputRef = useRef(null)
-    const { sendMessage, sendTyping } = useChatStore()
+    const { sendMessage, sendTyping, isTyping } = useChatStore()
 
     const handleImageChange = (e) => {
         const file = e.target.files[0]
@@ -62,6 +62,13 @@ const MessageInput = () => {
     
   return ( 
     <div className="p-4 w-full">
+              {/* Show typing indicator */}
+        {isTyping && (
+            <div className="text-xs text-zinc-500 mb-2 italic animate-pulse">
+            Typing...
+            </div>
+        )}
+
         {imagePreview && (
             <div className="mb-3 flex items-center gap-2">
                 <div className="relative">
