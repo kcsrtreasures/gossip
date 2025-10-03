@@ -8,7 +8,7 @@ const MessageInput = () => {
     const [ imagePreview, setImagePreview ] = useState(null)
     const [ sending, setSending ] = useState(false)
     const fileInputRef = useRef(null)
-    const { sendMessage, sendTyping, isTyping, addMessage } = useChatStore()
+    const { sendMessage, sendTyping, isTyping } = useChatStore()
 
     const handleImageChange = (e) => {
         const file = e.target.files[0]
@@ -34,30 +34,12 @@ const MessageInput = () => {
         if(!text.trim() && !imagePreview) return;
         if (sending) return
 
-        
-        const newMessage = {
-            text: text.trim(),
-            image: imagePreview,
-            sender: "me", // or your currentUserId
-            createdAt: new Date().toISOString(),
-            pending: true, // mark as pending until server confirms
-        }
-
         try {
             setSending(true)
-
-            // Immediately show in UI
-            addMessage(newMessage)
-
-                    // Send to server
             await sendMessage({
-                text: newMessage.text,
-                image: newMessage.image,
-            })
-            // await sendMessage({
-            //     text: text.trim(),
-            //     image: imagePreview,
-            // });
+                text: text.trim(),
+                image: imagePreview,
+            });
 
             // Clear form
             setText("")
@@ -86,6 +68,8 @@ const MessageInput = () => {
             Typing...
             </div>
         )}
+
+
 
         {imagePreview && (
             <div className="mb-3 flex items-center gap-2">

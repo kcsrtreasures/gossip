@@ -13,13 +13,6 @@ export const useChatStore = create((set, get) => ({
 
     unreadMessages: {},
 
-        // 👇 helper to add a message immediately
-    addMessage: (message) => {
-        set((state) => ({
-            messages: [...state.messages, message]
-        }))
-    },
-
     sendTyping: () => {
         const { selectedUser } = get()
         const socket = useAuthStore.getState().socket;
@@ -66,49 +59,15 @@ export const useChatStore = create((set, get) => ({
         }
     },
 
-    sendMessage: async (messageData) => {
-        const { selectedUser } = get()
-        const tempMessage = {
-            ...messageData,
-            _id: Date.now().toString(),   // temporary ID
-            senderId: useAuthStore.getState().authUser._id,
-            createdAt: new Date().toISOString(),
-            pending: true,
-        }
-
-        // 1. Show message immediately
-        get().addMessage(tempMessage)
-
+    sendMessage: async(messageData) => {
+        const {selectedUser, messages} = get()
         try {
-            // 2. Send to server
             const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData)
-
-            // 3. Replace temporary with actual from server
-            set((state) => ({
-                messages: state.messages.map((msg) =>
-                    msg._id === tempMessage._id ? res.data : msg
-                ),
-            }))
+            set({messages:[...messages, res.data]})
         } catch (error) {
-            toast.error(error.response?.data?.message || "Failed to send")
-            // Optional: mark failed message
-            set((state) => ({
-                messages: state.messages.map((msg) =>
-                    msg._id === tempMessage._id ? { ...msg, failed: true } : msg
-                ),
-            }))
+            toast.error(error.response.data.message)
         }
     },
-
-    // sendMessage: async(messageData) => {
-    //     const {selectedUser, messages} = get()
-    //     try {
-    //         const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData)
-    //         set({messages:[...messages, res.data]})
-    //     } catch (error) {
-    //         toast.error(error.response.data.message)
-    //     }
-    // },
 
     subscribeToMessages: () => {
     const { selectedUser, incrementUnread } = get();
