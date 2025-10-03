@@ -29,29 +29,49 @@ const MessageInput = () => {
         if (fileInputRef.current) fileInputRef.current.value = ""
     }
 
-    const handleSendMessage = async(e) => {
+    const handleSendMessage = async (e) => {
         e.preventDefault()
-        if(!text.trim() && !imagePreview) return;
+        if (!text.trim() && !imagePreview) return
         if (sending) return
+
+        // Copy values to local variables
+        const messageText = text.trim()
+        const messageImage = imagePreview
+        const currentUserId = useAuthStore.getState().authUser._id
+
+        // Clear the input immediately
+        setText("")
+        setImagePreview(null)
+        if (fileInputRef.current) fileInputRef.current.value = ""
+
+        const newMessage = {
+            _id: Date.now().toString(), // temporary unique ID
+            text: messageText,
+            image: messageImage,
+            senderId: currentUserId,
+            createdAt: new Date().toISOString(),
+            pending: true,
+        }
 
         try {
             setSending(true)
-            await sendMessage({
-                text: text.trim(),
-                image: imagePreview,
-            });
 
-            // Clear form
-            setText("")
-            setImagePreview(null)
-            if (fileInputRef.current) fileInputRef.current.value =""; 
+            // Add to chat immediately
+            addMessage({ ...newMessage }) // spread to ensure new object
+
+            // Send to server
+            await sendMessage({
+                text: messageText,
+                image: messageImage,
+            })
         } catch (error) {
-            console.error("Failed to send message:", error)     
-            toast.error("Message failed to send")    
+            console.error("Failed to send message:", error)
+            toast.error("Message failed to send")
         } finally {
             setSending(false)
         }
     }
+
 
     const handleTyping = (e) => {
         setText(e.target.value)
@@ -68,8 +88,6 @@ const MessageInput = () => {
             Typing...
             </div>
         )}
-
-
 
         {imagePreview && (
             <div className="mb-3 flex items-center gap-2">
