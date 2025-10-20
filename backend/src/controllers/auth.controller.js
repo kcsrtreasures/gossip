@@ -116,6 +116,7 @@ export const login = async (req, res) => {
                 )}&user=${encodeURIComponent(JSON.stringify(safeUser))}`;
                 return res.redirect(redirectWithToken);
             }
+            
 
             return res.send(`
             <html>
