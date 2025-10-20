@@ -104,6 +104,18 @@ export const login = async (req, res) => {
             };
             // console.log("safeUser sent to frontend:", safeUser);
 
+                        // ✅ Detect mobile device
+            const isMobile = /Mobi|Android|iPhone|iPad/i.test(
+                req.headers["user-agent"] || ""
+            );
+
+            if (isMobile) {
+                // ✅ Mobile: redirect directly back with token + user info
+                const redirectWithToken = `${redirectUrl}?token=${encodeURIComponent(
+                    token
+                )}&user=${encodeURIComponent(JSON.stringify(safeUser))}`;
+                return res.redirect(redirectWithToken);
+            }
 
             return res.send(`
             <html>
